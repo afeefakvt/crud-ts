@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>student management</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        #snackbar {
+            visibility: hidden;
+            /* Hidden by default. Visible on click */
+            min-width: 250px;
+            /* Set a default minimum width */
+            margin-left: -125px;
+            /* Divide value of min-width by 2 */
+            background-color: #333;
+            /* Black background color */
+            color: #fff;
+            /* White text color */
+            text-align: center;
+            /* Centered text */
+            border-radius: 2px;
+            /* Rounded borders */
+            padding: 16px;
+            /* Padding */
+            position: fixed;
+            /* Sit on top of the screen */
+            z-index: 1;
+            /* Add a z-index if needed */
+            left: 50%;
+            /* Center the snackbar */
+            bottom: 30px;
+            /* 30px from the bottom */
+        }
+
+        /* Show the snackbar when clicking on a button (class added with JavaScript) */
+        #snackbar.show {
+            visibility: visible;
+            /* Show the snackbar */
+            /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+  However, delay the fade out process for 2.5 seconds */
+            -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        /* Animations to fade the snackbar in and out */
+        @-webkit-keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
+        }
+
+        @-webkit-keyframes fadeout {
+            from {
+                bottom: 30px;
+                opacity: 1;
+            }
+
+            to {
+                bottom: 0;
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeout {
+            from {
+                bottom: 30px;
+                opacity: 1;
+            }
+
+            to {
+                bottom: 0;
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Student Management</h1>
+
+        <!-- Button to open modal for adding a new student -->
+        <button class="btn btn-primary mt-4 " data-toggle="modal" data-target="#studentModal"
+            onclick="openAddModal()">Add Student</button>
+
+        <!-- Students List (Read) -->
+        <div class="mt-4">
+            <h2 class="text-center">Students List</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>SI No :</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Age</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody">
+                    <% student.forEach(function(student, index) { %>
+                        <tr>
+                            <td>
+                                <%= index + 1 %>
+                            </td>
+                            <td>
+                                <%= student.name %>
+                            </td>
+                            <td>
+                                <%= student.email %>
+                            </td>
+                            <td>
+                                <%= student.age %>
+                            </td>
+                            <td>
+                                <button class="btn btn-warning btn-sm" data-toggle="modal"
+                                    data-target="#editStudentModal"
+                                    onclick="openEditModal('<%= student._id %>', '<%= student.name %>','<%= student.email%>', '<%= student.age %>')">Edit</button>
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="deleteStudent('<%= student._id %>')">Delete</button>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+
+
+        <!-- Add Student Modal -->
+        <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="studentModalLabel">Add Student</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="studentForm">
+                            <div class="form-group">
+                                <label for="studentName">Name</label>
+                                <input type="text" class="form-control" id="studentName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentEmail">Email</label>
+                                <input type="email" class="form-control" id="studentEmail" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentAge">Age</label>
+                                <input type="number" class="form-control" id="studentAge" name="age" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Edit Student Modal -->
+        <div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editStudentModalLabel">Edit Student</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editStudentForm">
+                            <input type="hidden" id="editStudentId" name="id"> <!-- Hidden field for student ID -->
+                            <div class="form-group">
+                                <label for="editStudentName">Name</label>
+                                <input type="text" class="form-control" id="editStudentName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editStudentEmail">Email</label>
+                                <input type="email" class="form-control" id="editStudentEmail" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editStudentAge">Age</label>
+                                <input type="number" class="form-control" id="editStudentAge" name="age" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <div id="snackbar"></div>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function openAddModal() {
+            // Reset the form for adding a new student
+            document.getElementById('studentForm').reset();
+            document.getElementById('studentModalLabel').innerText = 'Add Student';
+        }
+
+        // Form submission handler
+        document.getElementById('studentForm').addEventListener('submit', async function (e) {
+            e.preventDefault(); //prevent form from submitting
+
+            const name = document.getElementById('studentName').value;
+            const email = document.getElementById('studentEmail').value;
+            const age = document.getElementById('studentAge').value;
+
+            const addStudentModal = document.getElementById('studentModal')
+
+            try {
+                const response = await fetch('/addStudent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email, age }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    addStudentModal.style.display = 'none';
+                    snackbar(result.message);
+                    setTimeout(()=>{
+                        location.reload();
+                    },1000)
+                    document.querySelector("#studentModal .close").click();
+                  
+                } else {
+                    snackbar(result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                snackbar('Something went wrong while adding the student.');
+            }
+        });
+
+        async function deleteStudent(id) {
+           
+                try {
+                    const response = await fetch(`/deleteStudent/${id}`, {
+                        method: "DELETE",
+                    })
+                    const result = await response.json();
+                    if (result.success) {
+
+                        snackbar(result.message);
+                        setTimeout(()=>{
+                            location.reload();
+                        },1000);
+                       
+                    } else {
+                        snackbar(result.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    snackbar('Failed to delete student.');
+
+                }
+            
+        }
+
+        function openEditModal(id, name, email, age) {
+            // Pre-fill the edit form with current student details
+            document.getElementById('editStudentId').value = id;
+            document.getElementById('editStudentName').value = name;
+            document.getElementById('editStudentEmail').value = email;
+            document.getElementById('editStudentAge').value = age;
+
+            // Show the modal
+            $('#editStudentModal').modal('show');
+        }
+        // Form submission handler for the edit student form
+        document.getElementById('editStudentForm').addEventListener('submit', async function (e) {
+            e.preventDefault(); // Prevent the default form submission
+
+            const id = document.getElementById('editStudentId').value;
+            const name = document.getElementById('editStudentName').value;
+            const email = document.getElementById('editStudentEmail').value;
+            const age = document.getElementById('editStudentAge').value;
+
+            const editStudentModal = document.getElementById('editStudentModal');
+
+            try {
+                const response = await fetch(`/updateStudent/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email, age })
+                })
+
+                const result = await response.json();
+                if (result.success) {
+                    editStudentModal.style.display = 'none';
+                    snackbar(result.message)
+                    setTimeout(()=>{
+                        location.reload();
+                    },1000);
+                    document.querySelector("#editStudentModal .close").click();
+                 
+                } else {
+                    snackbar(result.message)
+                }
+            } catch (error) {
+                console.log('error:', error);
+                snackbar('failed to update student');
+
+
+            }
+        })
+
+        function snackbar(text) {
+            // Get the snackbar DIV
+            var x = document.getElementById("snackbar");
+            x.innerHTML = text;
+            // Add the "show" class to DIV
+            x.className = "show";
+
+            // After 3 seconds, remove the show class from DIV
+            setTimeout(function () { x.className = x.className.replace("show", ""); }, 3000);
+        }
+    </script>
+</body>
+
+</html>
